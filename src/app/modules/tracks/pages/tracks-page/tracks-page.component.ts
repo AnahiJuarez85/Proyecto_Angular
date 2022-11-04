@@ -1,9 +1,9 @@
-import { ThisReceiver } from '@angular/compiler';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TrackModel } from '@core/models/tracks.model';
 import { TracksService } from '@modules/tracks/services/track.service';
+import { TracksModule } from '@modules/tracks/tracks.module';
 import { Subscription } from 'rxjs';
-import * as dataRaw from '../../../../data/tracks.json'
+
 @Component({
   selector: 'app-tracks-page',
   templateUrl: './tracks-page.component.html',
@@ -18,26 +18,27 @@ export class TracksPageComponent implements OnInit, OnDestroy{
   constructor(private trackService: TracksService) { }
 
   ngOnInit(): void {
-    const observer1$ = this.trackService.dataTracksRandom$
-    .subscribe(Response =>{
-      this.tracksTrending = Response
-      this.tracksRandom = Response
-      console.log('Canciones trending --->', Response)
-    })
+    this.loadDataAll() //TODO 📌📌
+    this.loadDataRandom() //TODO 📌📌
+  }
 
-    const observer2$ = this.trackService.dataTracksRandom$
-    .subscribe(Response =>{
-      this.tracksRandom = [... this.tracksRandom, ... Response]
-      console.log('Canciones random entrando .... --->', Response)
-    })
+  async loadDataAll(): Promise<any> {
+    this.tracksTrending = await this.trackService.getAllTracks$().toPromise()
 
-    this.listObservers$ =[observer1$, observer2$]
+  }
+
+  loadDataRandom(): void {
+    this.trackService.getAllRandom$()
+      .subscribe((response: TrackModel[]) => {
+        this.tracksRandom = response
+      })
   }
 
   ngOnDestroy(): void {
-    this.listObservers$.forEach(u => u.unsubscribe())
+   
     
   }
 
 }
+
 
